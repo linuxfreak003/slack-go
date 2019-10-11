@@ -18,7 +18,7 @@ func main() {
 	var slackToken string
 
 	home, _ := os.UserHomeDir()
-	tokenFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.config/go-pomodoro/slack-token", home))
+	tokenFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.config/slack-go/slack-token", home))
 	if err == nil {
 		slackToken = string(tokenFile)
 	}
