@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -34,11 +33,6 @@ func main() {
 	flag.StringVar(&channel, "c", "", "Slack Channel to send to")
 	flag.Parse()
 
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		panic(err)
-	}
-
 	if channel == "" {
 		fmt.Println("Error: No channel specified")
 		return
@@ -55,22 +49,30 @@ func main() {
 		return
 	}
 
-	if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
-		fmt.Println("Error: No message given")
-		return
-	}
+	fi, _ := os.Stdin.Stat() // get the FileInfo struct describing the standard input.
 
-	reader := bufio.NewReader(os.Stdin)
+	if (fi.Mode() & os.ModeCharDevice) == 0 {
+		fmt.Println("data is from pipe")
+		// do things for data from pipe
 
-	var build strings.Builder
-	for {
-		input, _, err := reader.ReadRune()
-		if err != nil && err == io.EOF {
-			break
+		bytes, _ := ioutil.ReadAll(os.Stdin)
+		message = string(bytes)
+	} else {
+		fmt.Println("data is from terminal")
+		// do things from data from terminal
+
+		ConsoleReader := bufio.NewReader(os.Stdin)
+		fmt.Println("Enter message to send : ")
+
+		message, err = ConsoleReader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
-		build.WriteRune(input)
+
+		fmt.Println("Message Sent.")
 	}
-	message = build.String()
+
 	if message == "" {
 		fmt.Println("Error: No message given")
 	}
